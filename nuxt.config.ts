@@ -2,5 +2,9 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  modules: ['@vueuse/motion/nuxt', '@nuxtjs/tailwindcss'],
+  modules: ['@vueuse/motion/nuxt', '@nuxtjs/tailwindcss', '@nuxtjs/supabase'],
+  runtimeConfig: {
+    supabaseUrl: process.env.SUPABASE_URL || '',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+  },
 });
