@@ -12,59 +12,79 @@ export const useSessionStore = defineStore('session', {
     async register(email: string, password: string, displayName: string) {
       try {
         this.loading = true;
-        const supabase = useSupabase();
+        const { supabase } = useSupabase();
+
+        // Sign up the user
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: { display_name: displayName }, // Custom user metadata
+          },
         });
 
         if (error) throw error;
-        const { error: updateError } = await supabase.auth.updateUser({
-          data: { display_name: displayName },
-        });
 
-        if (updateError) throw updateError;
+        // Set the user state
         this.user = data.user;
-        this.isAuthenticated = true;
+        this.isAuthenticated = !!data.user;
       } catch (err: any) {
         this.error = err.message || 'An error occurred during registration.';
       } finally {
         this.loading = false;
       }
     },
+
     async login(email: string, password: string) {
       try {
         this.loading = true;
-        const supabase = useSupabase();
+        const { supabase } = useSupabase();
+
+        // Sign in the user
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+
         if (error) throw error;
+
+        // Set the user state
         this.user = data.user;
-        this.isAuthenticated = true;
+        this.isAuthenticated = !!data.user;
       } catch (err: any) {
         this.error = err.message || 'An error occurred during login.';
       } finally {
         this.loading = false;
       }
     },
+
     async logout() {
       try {
-        const supabase = useSupabase();
+        const { supabase } = useSupabase();
+
+        // Sign out the user
         const { error } = await supabase.auth.signOut();
+
         if (error) throw error;
+
+        // Reset the state
         this.user = null;
         this.isAuthenticated = false;
       } catch (err: any) {
         this.error = err.message || 'An error occurred during logout.';
       }
     },
+
     async fetchUser() {
       try {
-        const supabase = useSupabase();
+        const { supabase } = useSupabase();
+
+        // Fetch the current user
         const { data, error } = await supabase.auth.getUser();
+
         if (error) throw error;
+
+        // Update the state
         this.user = data.user;
         this.isAuthenticated = !!data.user;
       } catch (err: any) {
@@ -72,8 +92,11 @@ export const useSessionStore = defineStore('session', {
           err.message || 'An error occurred while fetching the user.';
       }
     },
+
     listenToAuthChanges() {
-      const supabase = useSupabase();
+      const { supabase } = useSupabase();
+
+      // Listen to authentication state changes
       supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN') {
           this.user = session?.user || null;
